@@ -1,0 +1,17 @@
+# Practice to define a function
+
+bfun <- function(a,b){
+         plot(x = a,y=b)
+        
+     }
+a=c(1:5)
+b=c(6:10)
+bfun(a,b)
+
+secfunc <- function(x,y){
+    if(x<y){
+        c=pnorm(q = y)-pnorm(q = x)
+    }
+    return(c)}
+
+secfunc(1,-1)
