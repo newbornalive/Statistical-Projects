@@ -1,0 +1,6 @@
+# the demonstration of a simple bootstrap
+w= c(1:100)
+k=numeric(10000)
+for(i in 1: 10000) { k[i]=mean(sample(x=w,size = 100,replace = TRUE))}
+mean(k); mean(w)
+
