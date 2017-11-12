@@ -1,0 +1,282 @@
+N = 1000
+p = runif(N) # This gives a uniform sample from [0,1]
+theta = p^(1/3) # This is the sample of ?? computed from p
+mean(theta) # should be approximately 1/a
+var(theta)
+
+#2
+y1 = c(86, 74, 79, 70, 84, 65, 57, 49, 70, 79) # pages for 10 weeks
+y2 = c(83, 68, 59, 70, 58, 66, 64, 70, 69, 75)
+y3 = c(72, 84, 72, 89, 88, 91, 74, 94, 77, 76)
+y.bar = (mean(y1)+mean(y2)+mean(y3))/3  # used for y
+y.sum = numeric(3) # sufficient statistics for likelihoods
+y.sum[1] = sum(y1); y.sum[2] = sum(y2); y.sum[3] = sum(y3)
+n = length(y1)
+#gibbs
+#set loop counts
+
+N = 5000
+B = 1000
+N1 = N+1       # iteration count - one above N
+#initial
+beta=1/y.bar
+lda = matrix(0,ncol=3,nrow=N1)  
+lda[1,]=y.bar
+#begin iteration loop
+for(i in 1:N1) {
+    for(j in 1:3){
+    lda[i+1,j] = rgamma(1,shape=(1+y.sum[j]),scale =1/(beta+n)) # Gibbs sample lamda
+    }
+}
+
+mean(lda[B:N1,1])
+mean(lda[B:N1,2])
+mean(lda[B:N1,3])
+var(lda[B:N1,1])
+var(lda[B:N1,2])
+var(lda[B:N1,3])
+par(mar=c(1,1,1,1))
+par(mfrow=c(3,3))    # graph histograms, traces and autocorrelations
+hist(lda[B:N1,1])
+hist(lda[B:N1,2])  
+hist(lda[B:N1,3])  # should be a gamma distribution
+plot(lda[,1],type='p',pch='.') 
+plot(lda[,2],type='p',pch='.') 
+plot(lda[,3],type='p',pch='.') # shows good mixing
+acf(lda[,1])
+acf(lda[,2])  
+acf(lda[,3])  
+# shows little correlation of iterates
+# credible intervals
+# credible interval for mu
+lda1.cr = lda[B:N1,1]
+lda2.cr = lda[B:N1,2]
+lda3.cr = lda[B:N1,3]
+lda1.cr = sort(lda1.cr)
+lda2.cr = sort(lda2.cr)
+lda3.cr = sort(lda3.cr)
+L = as.integer((N1-B)*.025)
+U = as.integer((N1-B)*.975)
+msg.cred.lda1 = paste(c("(",lda1.cr[L],",",lda1.cr[U],")"))
+print(msg.cred.lda1,quote=FALSE)
+msg.cred.lda2 = paste(c("(",lda2.cr[L],",",lda2.cr[U],")"))
+print(msg.cred.lda2,quote=FALSE)
+msg.cred.lda3 = paste(c("(",lda3.cr[L],",",lda3.cr[U],")"))
+print(msg.cred.lda3,quote=FALSE)
+
+#3
+f=function(alpha) { l=-3*lgamma(alpha)+(alpha-1)*log(lda[1]+lda[2]+lda[3])-0.01*alpha
+return(l)}
+
+y1 = c(86, 74, 79, 70, 84, 65, 57, 49, 70, 79) # pages for 10 weeks
+y2 = c(83, 68, 59, 70, 58, 66, 64, 70, 69, 75)
+y3 = c(72, 84, 72, 89, 88, 91, 74, 94, 77, 76)
+y.bar = (mean(y1)+mean(y2)+mean(y3))/3  # used for y
+y.sum = numeric(3) # sufficient statistics for likelihoods
+y.sum[1] = sum(y1); y.sum[2] = sum(y2); y.sum[3] = sum(y3)
+n = length(y1)
+N = 5000
+B = 1000
+N1 = N+1       # iteration count - one above N
+#initial
+alpha=c()
+alpha[1]=100
+beta=c()
+beta[1]=1
+lda = matrix(0,ncol=3,nrow=N1)  
+lda[1,]=alpha[1]
+accept.alpha=0
+d=10
+#begin iteration loop
+for(i in 1:N1) {
+    for(j in 1:3){
+        lda[i+1,j] = rgamma(1,shape=(alpha[i]+y.sum[j]),scale =1/(beta+n)) # Gibbs sample lamda
+    }
+    alpha.star = -1
+    while(alpha.star < 0) {
+        alpha.star = rnorm(1,alpha[i],d)  
+    }
+    f.star = f(alpha.star,lda[i+1,])
+    fi = f(alpha[i],lda[i+1,])
+     alpha.prob = min(1,exp(f.star - fi))
+    if(runif(1) < alpha.prob) {
+        alpha[i+1] = alpha.star
+        accept.alpha = accept.alpha + 1
+    }else alpha[i+1] = alpha[i]
+}
+accept.alpha/N
+alpha.b = alpha[B:N]
+lambda.b = lambda[B:N,]
+mean(alpha.b)
+var(alpha.b)
+mean(lambda.b)
+var(lambda.b)
+apply(lambda.b,2,mean)   #separate means by column (for "by row", 2nd arg is 1)
+y.sum/n                #compare to MLE's
+par(mar=c(1,1,1,1))
+par(mfrow=c(3,4))
+plot(alpha,pch=".")
+for(j in 1:3) plot(lambda[,j],pch=".",ylab=paste("lambda[",j,"]"))
+hist(alpha.b)
+for(j in 1:3) hist(lambda.b[,j],pch=".",main=paste("Histogram of theta[",j,"]"))
+acf(alpha)
+for(j in 1:3) acf(lambda[,j],main=paste("Series theta[",j,"]"))
+#credible intervals
+lam1 = lambda.b[,1]
+lam1 = sort(lam1)
+nn = length(lam1)
+L = as.integer(.025*nn)
+U = as.integer(.975*nn)
+print(c("CI for lambda 1:",lam1[L],lam1[U]),quote=FALSE)
+
+lam2 = lambda.b[,2]
+lam2 = sort(lam2)
+print(c("CI for lambda 2:",lam2[L],lam2[U]),quote=FALSE)
+
+lam3 = lambda.b[,3]
+lam3 = sort(lam3)
+print(c("CI for lambda 3:",lam3[L],lam3[U]),quote=FALSE)
+
+
+mean(lda[B:N1,1])
+mean(lda[B:N1,2])
+mean(lda[B:N1,3])
+var(lda[B:N1,1])
+var(lda[B:N1,2])
+var(lda[B:N1,3])
+par(mar=c(1,1,1,1))
+par(mfrow=c(3,3))    # graph histograms, traces and autocorrelations
+hist(lda[B:N1,1])
+hist(lda[B:N1,2])  
+hist(lda[B:N1,3])  # should be a gamma distribution
+plot(lda[,1],type='p',pch='.') 
+plot(lda[,2],type='p',pch='.') 
+plot(lda[,3],type='p',pch='.') # shows good mixing
+acf(lda[,1])
+acf(lda[,2])  
+acf(lda[,3])  
+# shows little correlation of iterates
+# credible intervals
+# credible interval for mu
+lda1.cr = lda[B:N1,1]
+lda2.cr = lda[B:N1,2]
+lda3.cr = lda[B:N1,3]
+lda1.cr = sort(lda1.cr)
+lda2.cr = sort(lda2.cr)
+lda3.cr = sort(lda3.cr)
+L = as.integer((N1-B)*.025)
+U = as.integer((N1-B)*.975)
+msg.cred.lda1 = paste(c("(",lda1.cr[L],",",lda1.cr[U],")"))
+print(msg.cred.lda1,quote=FALSE)
+msg.cred.lda2 = paste(c("(",lda2.cr[L],",",lda2.cr[U],")"))
+print(msg.cred.lda2,quote=FALSE)
+msg.cred.lda3 = paste(c("(",lda3.cr[L],",",lda3.cr[U],")"))
+print(msg.cred.lda3,quote=FALSE)
+
+
+#Pseudo code:
+ #  sort x to get sorted x
+#get index for lower x value that is int(.025*N)
+#get index for upper x value that is int(.975*N)
+#test if 0 ??? is between lower x and upper x
+#if it is do not reject null, if not, reject null.
+#'
+N = 2000
+n = 10
+mu.x = 10
+mu.y = 12
+sig.x = 2
+sig.y = 2.5
+x = rnorm(N,mu.x,sig.x/sqrt(n))
+y = rnorm(N,mu.y,sig.y/sqrt(n))
+x.minus.y = x-y
+
+
+x2<-sort(x)
+L = as.integer(N*.025)
+U = as.integer(N*.975)
+x2[L]<12 & x2[U]>12
+
+x2[L]
+x2[U]
+
+#'Pseudo code:
+ #   count = 0
+#loop on i from 1 to N:
+ #   if x.minus.y[i] >= 0 increment count
+#end loop on i
+#P(x >= y) = count/N
+#if( P(x >= y) <= .05) reject null
+#Further note: View 'hist(x.minus.y)' to get a perspective of x-y
+#
+y = c(1,0,0,1,0,0,0,1,0,0,1,0,0,0,1,0,0,0,0,0)
+n = length(y)
+m = 2000
+alpha.1=1.6
+beta.1=4.8
+alpha.2=1.5
+beta.2=4.2
+theta.m1 = rbeta(m,alpha.1,beta.1)
+theta.m2 = rbeta(m,alpha.2,beta.2)
+theta.m = rbind(theta.m1,theta.m2,deparse.level = 0)
+# theta.m is a matrix with 2 rows: one for model 1 (theta.m[1,],)
+# and the second row for model 2 (theta.m[2,]
+#########################################################################
+#Pseudo code to help you with your code:
+    LS.FS = numeric(2)
+#loop on j from 1 to 2
+
+    sum.log.1 = 0
+    sum.log.2=0
+    for(i in 1:n){ sum.log.1 = 0
+    sum.log.2=0
+        
+        for(k in 1:m){sum.y.i.1 = 0
+        sum.y.i.2=0
+            sum.y.i.1= sum.y.i.1+(theta.m[1,k]^y[i])*((1-theta.m[1,k])^(1-y[i]))
+            sum.y.i.2= sum.y.i.2+(theta.m[2,k]^y[i])*((1-theta.m[2,k])^(1-y[i]))
+        }
+       
+        sum.log.1= sum.log.1 + log(sum.y.i.1/m) 
+        sum.log.2= sum.log.2 + log(sum.y.i.2/m) 
+        LS.FS.1 = sum.log.1/n
+        LS.FS.2 = sum.log.2/n
+    }
+    LS.FS.1
+    LS.FS.2
+############################################################
+   
+    #loop on j from 1 to 2
+    y = c(1,0,0,1,0,0,0,1,0,0,1,0,0,0,1,0,0,0,0,0)
+    n = length(y)
+    m = 2000
+    alpha.1=1.6
+    beta.1=4.8
+    alpha.2=1.5
+    beta.2=4.2
+    theta.m1 = rbeta(m,alpha.1,beta.1)
+    theta.m2 = rbeta(m,alpha.2,beta.2)
+    theta.m = rbind(theta.m1,theta.m2,deparse.level = 0)
+    LS.FS = numeric(2)
+    for(j in 1:2){sum.log=1
+                    for(i in 1:n){
+                        sum.y.i=0
+                        for(k in 1:m){
+                            sum.y.i = sum.y.i + theta.m[j,k]^y[i]*(1-theta.m[j,k])^(1-y[i])
+                        }
+                        sum.log= sum.log + log(sum.y.i/m)
+                    }
+    LS.FS[j] = sum.log/n
+    }
+    LS.FS
+#sum.log = 0
+#loop on i from 1 to n
+#sum.y.i = 0
+#loop on k from 1 to m
+#sum.y.i = sum.y.i + theta.m[j,k]^y[i]*(1-theta[j,k])^(1-y[i])
+#end loop on theta.m[j,k]
+#sum.log = sum.log + log(sum.y.i/m)
+#end loop on y[i]
+#LS.FS[j] = sum.log/n
+#end loop on j
+#LS.FS # display results
