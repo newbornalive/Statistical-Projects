@@ -1,0 +1,47 @@
+
+
+n=25
+x=sample(runif(0:1),n,replace=T)
+
+#R use 32-bit integers, 4 bytes (4*8=32, 1 byte=8 bits),
+#max integer is 2^31-1= 2147483647.
+# ?RNGkind
+
+
+#Plot the pmf and cdf of the binomial
+#a) plot the Bin(n = 10, p = 0.5)
+
+X11()
+x = 0:10
+y = dbinom(x,10,0.5)
+plot(y, type="h",main='PDF of Binomial')
+X11()
+cdf = c(0,pbinom(x,10,0.5))
+cdf.plot = stepfun(x,cdf,f=0)
+plot.stepfun(cdf.plot,xlab="y",ylab="CDF",verticals=FALSE,
+             do.points=TRUE,main="CDF of Binomial",pch=16)
+
+#b) plot the Poi(lambda = 5)
+X11()
+x = 0:10
+y = dpois(x,lambda = 5)
+plot(y, type="h",main='PDF of poisson')
+X11()
+cdf = c(0,dpois(x,lambda = 5))
+cdf.plot = stepfun(x,cdf,f=0)
+plot.stepfun(cdf.plot,xlab="y",ylab="CDF",verticals=FALSE,
+             do.points=TRUE,main="CDF of Poisson",pch=16)
+
+#c) Determine the 25th percentile for each distribution.
+quantile(dbinom(x,10,0.5), 0.25) 
+quantile(dpois(x,lambda = 5),0.25) 
+
+X11()
+x = 0:3
+y = dbinom(x,3,2/5)
+plot(y, type="h")
+
+X11()
+cdf = c(0,pbinom(x,3,2/5))
+cdf.plot = stepfun(x,cdf,f=0)
+plot.stepfun(cdf.plot,xlab="y",ylab="CDF",verticals=FALSE,do.points=TRUE,main="",pch=16)
