@@ -1,0 +1,62 @@
+
+set.seed(1001)
+u=runif(100,0,1) 
+# f1=theta*x^(theta-1)
+# F1=x^theta
+# theta=2 
+x=sqrt(u)
+
+LL <- function(theta){
+    R=theta*(x^(theta-1))
+    -sum(log(R))}
+
+#LL <- function(theta){
+ #   -100*log(theta)-(theta-1)*sum(log(x))
+#}
+
+library(stats4)
+# initial theta should not be too far away from the true value
+mle(LL, start=list(theta = 1), method = "L-BFGS-B",
+    lower = c(-Inf, 0),upper = c(Inf, Inf))
+
+# theta=3
+x1=(1/(1-u))^(1/4)
+LL <- function(theta){
+    R=(theta+1)*((x1)^(-theta-2))
+    -sum(log(R))}
+mle(LL, start=list(theta = 0), method = "L-BFGS-B",
+    lower = c(-Inf, 0),upper = c(Inf, Inf))
+
+#theta=3
+x2=rgamma(100, 2, rate=3)
+LL <- function(theta){
+    R=dgamma(x2,2,rate=theta)
+    -sum(log(R))
+    }
+mle(LL, start=list(theta = 1), method = "L-BFGS-B",
+    lower = c(-Inf, 0),upper = c(Inf, Inf))
+
+#Ask Monday; theta=1/3
+x3=rgeom(101,prob=1/3)
+LL <- function(theta){
+    R=dgeom(x3,prob=theta)
+    -sum(log(R))
+    }
+mle(LL, start=list(theta = 0.5), method = "L-BFGS-B",
+    lower = c(-Inf, 0),upper = c(Inf, Inf))
+optimise(LL,c(0,1))
+
+
+# Original MOdel
+
+N <- 100
+x <- rnorm(N, mean = 3, sd = 2)
+LL <- function(mu, sigma) {
+    R = dnorm(x, mu, sigma)
+  #
+   -sum(log(R))
+}
+library(stats4)
+mle(LL, start = list(mu = 1, sigma=1), method = "L-BFGS-B",
+    lower = c(-Inf, 0),upper = c(Inf, Inf))
+
