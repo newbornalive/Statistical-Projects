@@ -1,0 +1,92 @@
+#Input data
+library(readxl)
+st <- read_excel("~/scienceteacher.xlsx")
+View(st)
+
+# looking for corraltion
+retention<-st$`Retention Code`
+retention_overall <- sum(retention==1)/length(retention)+sum(retention==2)/length(retention)
+retention_overall
+
+tapply(st$`Retention Code`,st$Gender ,median)
+## tapply(Summary Variable, Group Variable, Function)
+
+role_2015=sum(grepl('Science Teacher',st$`2015 Role`))
+
+# think of a way to partially match the keyword Teacher only, maybe use some lower capital function
+role_2016=sum(grepl('Teacher',st$`2016 Role`))
+role_2015=sum(grepl('Teacher',st$`2015 Role`))
+role_2014=sum(grepl('Teacher',st$`2014 Role`))
+role_2013=sum(grepl('Teacher',st$`2013 Role`))
+role_2013/length(st$`2013 Role`)
+role_2014/length(st$`2014 Role`)
+role_2015/length(st$`2015 Role`)
+role_2016/length(st$`2016 Role`)
+
+pd_2015=st$`110 PDHrs2015`
+sum(!is.na(pd_2015))
+length(pd_2015)
+sum(is.na(pd_2014))
+length(pd_2014)
+
+
+k1=grepl('Teacher',st$`2015 Role`)
+k=as.numeric(k1)
+
+
+fit <- lm( k ~ pd_2014+pd_2015, data=st)
+summary(fit)
+
+Gender=x15$Gender
+Underep =x15$`Percent Underrep`
+FRL2014=x15$`FRL2014`
+pistatus=x15$Pistatus    
+api=x15$APIBase2012
+PDAlignment_Reduced=x15$`PD Alignment_Reduced`
+Prin13_14=x15$OrgSupPrin13_14
+Tea1_13_14=x15$OrgSupTea1_13_14
+Tea2_13_14=x15$`OrgSupTea2_13_14`
+TotalBin=x15$`yrstotalRangeBin`
+Avg15=x15$PDHrsAvg15
+RePDHrsAvg15=x15$RePDHrsAvg15
+
+data2015 = data.frame(Underep,FRL2014,pistatus,api,PDAlignment_Reduced,Prin13_14,
+                      Tea1_13_14,Tea2_13_14,TotalBin, Avg15,RePDHrsAvg15)
+describe(data2015)
+sum(Gender==2,na.rm = T)/length(Gender)
+sum(Still==1,na.rm = T)/length(Still)
+
+Underep =x13$`Percent Underrep`
+FRL2013=x13$`%FRL2013`
+pistatus=x13$Pistatus    
+api=x13$APIBase2012
+PDAlignment_Reduced=x13$`PD Alignment_Reduced`
+Prin13_14=x13$OrgSupPrin13_14
+Tea1_13_14=x13$OrgSupTea1_13_14
+Tea2_13_14=x13$`OrgSupTea2 13_14`
+TotalBin=x13$`#yrstotalRangeBin`
+Avg13=x13$PDHrsAvg13
+RePDHrsAvg13=x13$RePDHrsAvg13
+
+data2013 = data.frame(Underep,FRL2013,pistatus,api,PDAlignment_Reduced,Prin13_14,
+                      Tea1_13_14,Tea2_13_14,TotalBin, Avg13,RePDHrsAvg13)
+describe(data2013)
+
+ library(readxl)
+x14 <- read_excel("C:/Users/Erica Young/Desktop/2014.xlsx")
+ View(x14)
+Underep =x14$`Percent Underrep`
+FRL2014=x14$`%FRL2014`
+pistatus=x14$Pistatus    
+api=x14$APIBase2012
+PDAlignment_Reduced=x14$`PD Alignment_Reduced`
+Prin13_14=x14$OrgSupPrin13_14
+Tea1_13_14=x14$OrgSupTea1_13_14
+Tea2_13_14=x14$`OrgSupTea2 13_14`
+TotalBin=x14$`#yrstotalRangeBin`
+Avg14=x14$PDHrsAvg14
+RePDHrsAvg14=x14$RePDHrsAvg14
+
+data2014 = data.frame(Underep,FRL2014,pistatus,api,PDAlignment_Reduced,Prin13_14,
+                      Tea1_13_14,Tea2_13_14,TotalBin, Avg14,RePDHrsAvg14)
+describe(data2014)
