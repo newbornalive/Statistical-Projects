@@ -1,0 +1,42 @@
+
+A=3;B=2;p=0.47
+Rec=c(A)
+Total=A+B  #total jackpot
+while(A>0)
+{
+    ProbVal=runif(1)
+    if(ProbVal <= p)
+    {
+        A = A+1; B =B-1
+    }else{A=A-1;B=B+1}
+    Rec=c(Rec,A)
+    if(A==Total){break}
+}
+length(Rec)
+max(Rec)
+sum(Rec==Total)/length(Rec)
+
+while(A>0)
+{
+    ProbVal=runif(1)
+    if(ProbVal <= p)
+    {
+        A = A+1; B =B-1
+    }else{A=A-1;B=B+1}
+    Rec=c(Rec,A)
+    if(A==0){break}
+}
+length(Rec)
+min(Rec)
+sum(Rec==0)/length(Rec)
+
+
+# Line plot, colour red
+plot(Rec,type="l",col="red")
+#Axes
+abline(h=0)
+abline(v=0)
+#Also the gamblers initial value and the total value of the game(optional)
+abline(h=A,col="red")
+abline(h=Total,col="green")
+
