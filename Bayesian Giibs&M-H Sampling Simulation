@@ -1,0 +1,54 @@
+### A simple illustration of the MCMC Algorithms
+### Let's say we have a function that we want to sample- Beta(alpha=10,beta=5)
+### We want to do Gibbs sampling and M-H sampling
+# Set function parameters
+alpha = 10
+beta = 5
+# Set parameter to be sampled
+theta = c()
+theta[1] = runif(1)  # initialize theta
+# Set the loop paramters 
+N = 5000
+B = 1000
+accept = 0
+d = .3
+# begin loop
+for(i in 1:N) {
+	mu[i+1] = rnorm(1,x.bar,sqrt(sigma.2/n))   # Gibbs sample mu[i+1] from Normal distribution
+	sigma.2.star = -1
+	while(sigma.2.star < 0) sigma.2.star = rnorm(1,sigma.2[i],d) # Use normal proposal distribution to draw sigma.2.star
+	f.star = f.sigma.2(sigma.2.star,mu[i+1],n,x)
+	f.i = f.sigma.2(sigma.2[i],mu[i+1],n,x)
+      if( runif(1) <= min(1,f.star/f.i)) {
+		sigma.2[i+1] = sigma.2.star
+		accept = accept + 1
+	}else sigma.2[i+1] = sigma.2[i]
+}
+accept/N
+theta.b = theta[B:N]
+Nb = length(theta.b)
+mean(theta.b)
+var(theta.b)
+# credible interval
+theta.b = sort(theta.b)
+L = as.integer(Nb*.025)
+U = as.integer(Nb*.975)
+print(theta.b[L],theta.b[U])
+# graphs to test MCMC
+par(mfrow=c(3,1))
+hist(theta.b)
+plot(theta,type='p',pch='.')
+acf(theta)
+##################### credible intervals
+mu.b = mu[Nb:N]
+mu.b = sort(mu.b)
+sigma.2.b = sigma.2[Nb:N]
+sigma.2.b = sort(sigma.2.b)
+Ns = length(mu.b)
+L = as.integer(.025*Ns)
+U = as.integer(.975*Ns)
+msg = paste("CI for mu: ",round(mu.b[L],3),",",round(mu.b[U],3))
+print(msg,quote=FALSE)
+msg = paste("CI for sigma.2: ",round(sigma.2.b[L],3),",",round(sigma.2.b[U],3))
+print(msg,quote=FALSE)
+
