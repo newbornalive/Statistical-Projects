@@ -1,0 +1,88 @@
+t = c(94.3, 15.7, 62.9, 126, 5.24, 31.4, 1.05, 1.05, 2.1, 10.5)
+x = c( 5, 1, 5, 14, 3, 19, 1, 1, 4, 22)
+n = length(t)
+a = 2
+b = 2
+c = 2
+N = 10000
+Nb = 1000
+N1 = N + 1
+lambda = matrix(0,n,N1)
+lambda[,1] = 1
+alpha = c()
+alpha[1] = .5
+beta = c()
+beta[1] = 1	
+d = 1
+accept = 0
+for(i in 1:N) {
+	for(j in 1:n) lambda[j,i+1] = rgamma(1,x[j] + alpha[i],t[j] + beta[i])
+	beta[i+1] = rgamma(1,n*alpha[i] + b,sum(lambda[,i+1])+c)
+	# M-H for alpha
+      #alpha.star = -1
+      #while(alpha.star < 0 ) {
+	#	alpha.star = rnorm(1,alpha[i],d)
+	#}
+	alpha.star=runif(1,alpha[i]/2,1-alpha[i]/2)
+	f.star = n*alpha.star*log(beta[i+1]) - n*lgamma(alpha.star) 
+		+ alpha.star*sum(log(lambda[,i+1])) - a*alpha.star + log(1/(1-alpha[i]))
+	f.i = n*alpha[i]*log(beta[i+1]) - n*lgamma(alpha[i]) 
+		+ alpha[i]*sum(log(lambda[,i+1])) - a*alpha[i] + log(1/(1-alpha.star))
+	alpha[i+1] = alpha[i]
+	if( runif(1) < exp(f.star-f.i) ) {
+		alpha[i+1] = alpha.star
+		accept = accept + 1
+	}
+}
+accept/N
+par(mfrow=c(3,3))
+hist(alpha[Nb:N])
+hist(beta[Nb:N])
+hist(lambda[1,Nb:N])
+plot(alpha,type='p',pch='.')
+plot(beta,type='p',pch='.')
+plot(lambda[1,],type='p',pch='.')
+acf(alpha)
+acf(beta)
+acf(lambda[1,])
+N2 = N - Nb +1
+alpha.b = sort(alpha[Nb:N])
+beta.b = sort(beta[Nb:N])
+lambda.b = lambda[,Nb:N]
+for(i in 1:n ) {
+	lam = lambda.b[i,]
+	lam = sort(lam)
+	lambda.b[i,] = lam
+}
+alpha.m = mean(alpha.b)
+beta.m = mean(beta.b)
+lambda.m = apply(lambda.b,1,mean)
+alpha.sd = sd(alpha.b)
+beta.sd = sd(beta.b)
+lambda.sd = apply(lambda.b,1,sd)
+alpha.025 = alpha.b[as.integer(N2*.025)]
+beta.025 = beta.b[as.integer(N2*.025)]
+lambda.025 = lambda.b[,as.integer(N2*.025)]
+alpha.5 = alpha.b[as.integer(N2*.5)]
+beta.5 = beta.b[as.integer(N2*.5)]
+lambda.5 = lambda.b[,as.integer(N2*.5)]
+alpha.975 = alpha.b[as.integer(N2*.975)]
+beta.975 = beta.b[as.integer(N2*.975)]
+lambda.975 = lambda.b[,as.integer(N2*.975)]
+#
+#
+m = c()
+m[1] = paste(round(alpha.m,4)," & ",round(alpha.sd,4)," & ",round(alpha.025,4)," & ",round(alpha.5,4)," & ",round(alpha.975,4),sep="")
+m[2] = paste(round(beta.m,4)," & ",round(beta.sd,4)," & ",round(beta.025,4)," & ",round(beta.5,4)," & ",round(beta.975,4),sep="")
+m[3] = paste(round(lambda.m[1],4)," & ",round(lambda.sd[1],4)," & ",round(lambda.025[1],4)," & ",round(lambda.5[1],4)," & ",round(lambda.975[1],4),sep="")
+m[4] = paste(round(lambda.m[2],4)," & ",round(lambda.sd[2],4)," & ",round(lambda.025[2],4)," & ",round(lambda.5[2],4)," & ",round(lambda.975[2],4),sep="")
+m[5] = paste(round(lambda.m[3],4)," & ",round(lambda.sd[3],4)," & ",round(lambda.025[3],4)," & ",round(lambda.5[3],4)," & ",round(lambda.975[3],4),sep="")
+m[6] = paste(round(lambda.m[4],4)," & ",round(lambda.sd[4],4)," & ",round(lambda.025[4],4)," & ",round(lambda.5[4],4)," & ",round(lambda.975[4],4),sep="")
+m[7] = paste(round(lambda.m[5],4)," & ",round(lambda.sd[5],4)," & ",round(lambda.025[5],4)," & ",round(lambda.5[5],4)," & ",round(lambda.975[5],4),sep="")
+m[8] = paste(round(lambda.m[6],4)," & ",round(lambda.sd[6],4)," & ",round(lambda.025[6],4)," & ",round(lambda.5[6],4)," & ",round(lambda.975[6],4),sep="")
+m[9] = paste(round(lambda.m[7],4)," & ",round(lambda.sd[7],4)," & ",round(lambda.025[7],4)," & ",round(lambda.5[7],4)," & ",round(lambda.975[7],4),sep="")
+m[10] = paste(round(lambda.m[8],4)," & ",round(lambda.sd[8],4)," & ",round(lambda.025[8],4)," & ",round(lambda.5[8],4)," & ",round(lambda.975[8],4),sep="")
+m[11] = paste(round(lambda.m[9],4)," & ",round(lambda.sd[9],4)," & ",round(lambda.025[9],4)," & ",round(lambda.5[9],4)," & ",round(lambda.975[9],4),sep="")
+m[12] = paste(round(lambda.m[10],4)," & ",round(lambda.sd[10],4)," & ",round(lambda.025[10],4)," & ",round(lambda.5[10],4)," & ",round(lambda.975[10],4),sep="")
+cat(c(m[1],"\n",m[2],"\n",m[3],"\n",m[4],"\n",m[5],"\n",m[6],"\n",m[7],"\n",m[8],"\n",m[9],"\n",m[10],"\n",m[11],"\n",m[12],"\n"))
+
