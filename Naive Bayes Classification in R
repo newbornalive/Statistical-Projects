@@ -1,0 +1,25 @@
+
+
+# Calculating Conditional Probabilities
+library(e1071)
+model <- naiveBayes(class ~ ., data = breast_cancer)
+class(model)
+summary(model)
+print(model)
+
+tbl_list <- sapply(breast_cancer[-10], table, breast_cancer[ , 10])
+tbl_list <- lapply(tbl_list, t)
+
+cond_probs <- sapply(tbl_list, function(x) { 
+  apply(x, 1, function(x) { 
+    x / sum(x) }) })
+
+cond_probs <- lapply(cond_probs, t)
+
+print(cond_probs)
+
+#Applying the Naive Bayes’ Classifier
+preds <- predict(model, newdata = breast_cancer)
+
+
+
