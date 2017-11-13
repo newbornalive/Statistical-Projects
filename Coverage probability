@@ -1,0 +1,55 @@
+
+
+# Coverage probability for different sample size of a normal distribution
+N=seq(100,10^3,by=10)
+cp=NULL
+
+for (k in 1:length(N)){
+    n=N[k]
+    x=array(rnorm(n*1000),c(1000,n))
+    
+    SD=apply(x,1,sd)
+    M=apply(x,1,mean)
+    C=qnorm(1-alp/2)*SD/sqrt(n)
+    
+    ci=((M-C) <0)&((M+C)>0)
+    cp[k]=mean(ci)
+    
+}
+plot(N,cp,type='l',xlab='Sample Size',ylab='Coverage Probability')
+
+# Coverage probability for bootstrap
+
+n1=binom(1,100,0.5)
+x1=rnorm(n1,0,1)
+x2=rnorm(100-n1,0,1.5)
+x=round(sort(c(x1,x2)))
+
+a.obs=mean(x)
+B=10^5
+n=length(x)
+mu.re=a.obs
+s.re=replicate(B,sample(x,n,replace = T))
+s.re=as.array(s.re)
+SD=apply(s.re,2,sd)
+M=apply(s.re,2,mean)
+C=qnorm(1-alp/2)*SD/sqrt(n)
+lcl=M-C
+ucl=M+C
+dk <- data.frame(M,SD,lcl,ucl)
+
+for(i in 1:B)
+{
+    dk$ci=(lcl<mu.re)&(ucl>mu.re)
+    dk$cp=mean(dk$ci)
+}
+
+ggplot(dk, aes(x=1:10^5, y = M)) +
+    geom_point(size = 4) +
+    geom_errorbar(aes(ymax = ucl, ymin = lcl))
+
+
+plot(c(1:B),dk$cp,xlab = "Sample ID", 
+        ylab="Coverage Probability")
+
+
