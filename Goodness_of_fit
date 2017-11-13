@@ -1,0 +1,98 @@
+trsum <- function(y,g){
+     d <- data.frame(y,g)
+     d$g <- as.factor(d$g)
+     d.fit <- aov(y~g,data=d)
+     anova(d.fit)[1,2]
+}
+
+permSST <- function(y,g,B){
+    many.sum <- replicate(B,trsum(sample(y),g))
+#hist(many.sum,col="yellow")
+    mean(many.sum > null.sum)
+}
+
+k=c(1,2,3,1,2,3,1,5)# example, you can substitute it with your data
+t=c(1,1,1,2,2,3,3,3)# the same as above, treatment levels
+
+null.sum <- trsum(k,t)
+B=999
+permSST(k,t,B)
+p=NULL
+
+
+
+#tao=0.3
+#tao=0.4
+#tao=1.5
+#tao=2
+#tao=3
+par(mar=c(1,1,1,1))
+par(mfrow=c(3,3))
+
+tao=c(0.3,0.4,0.7,1.5,2)
+
+M=200
+
+for(k in 1:5){
+    for(i in 1:M){
+        j=2
+        m=10
+        x1 <- rnorm(m,tao[k],1)
+        x2 <- rnorm(m,tao[k]*2,1)
+        y=c(x1,x2)
+        g=rep(c(1,2),c(m,m))
+        d <- data.frame(y,g)
+        d$g <- as.factor(d$g)
+        d.fit <- aov(y~g,data=d)
+        p[i]=anova(d.fit)$"Pr(>F)"[1]
+}
+    p10[k]=mean(p)
+    null.sum = trsum(y,g)
+    p2p1[k]=permSST(y,g,B=999)
+}
+
+plot(tao,p2p1,type='l',col='red')
+lines(tao,p10,type='l')
+
+
+for(k in 1:5){
+    for(i in 1:M){
+        j=2
+        m=30
+        x1 <- rnorm(m,tao[k],1)
+        x2 <- rnorm(m,tao[k]*2,1)
+        y=c(x1,x2)
+        g=rep(c(1,2),c(m,m))
+        d <- data.frame(y,g)
+        d$g <- as.factor(d$g)
+        d.fit <- aov(y~g,data=d)
+        p[i]=anova(d.fit)$"Pr(>F)"[1]
+    }
+    p10[k]=mean(p)
+    null.sum = trsum(y,g)
+    p2p1[k]=permSST(y,g,B=999)
+}
+
+plot(tao,p2p1,type='l',col='red')
+lines(tao,p10,type='l')
+
+for(k in 1:5){
+    for(i in 1:M){
+        j=2
+        m=100
+        x1 <- rnorm(m,tao[k],1)
+        x2 <- rnorm(m,tao[k]*2,1)
+        y=c(x1,x2)
+        g=rep(c(1,2),c(m,m))
+        d <- data.frame(y,g)
+        d$g <- as.factor(d$g)
+        d.fit <- aov(y~g,data=d)
+        p[i]=anova(d.fit)$"Pr(>F)"[1]
+    }
+    p10[k]=mean(p)
+    null.sum = trsum(y,g)
+    p2p1[k]=permSST(y,g,B=999)
+}
+
+plot(tao,p2p1,type='l',col='red')
+lines(tao,p10,type='l')
