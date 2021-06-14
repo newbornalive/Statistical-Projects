@@ -1,0 +1,235 @@
+library(doBy)  # esticon linear spline term
+library(ggplot2)
+library(MASS)
+library(nimble)
+library(stats)
+library(EnvStats)
+library(ggplot2)
+library(coda)
+library(plyr)
+library(car)
+
+###
+###commonly used library and features
+
+library(MASS) #MVN
+library(StatMeasures) # decile function to decide raw data percentile
+library(tidyverse) #cross validation
+library(caret) #cross validation
+library(reshape2)
+library("Hmisc")#correlation test for MLR
+# Stepwise Regression
+library(MASS)
+library(plyr)
+library(car)
+library(msm) # delta method
+
+
+###commonly used library and features
+##function
+###1-sample sign test#####median=eta
+###we are testing median
+sign.test=function(x,eta=1){
+  B=min(sum(x > eta), sum(x < eta))
+  ts=binom.test(B, length(x), 0.5, alternative = "two.sided")
+  return(ts)
+}
+
+
+
+##2-sample permutation test#####
+perm.test=function(x,y, perm.ite=50){
+  t.obs=t.test(x,y)$statistic
+  t.star=rep(NA,perm.ite)
+  for(i in 1:perm.ite){
+    group =  sample( c( rep("x",length(x)),rep("y",length(y))))
+    px = c(x,y)[group=="x"]
+    py = c(x,y)[group=="y"]
+    t.star[i]= t.test(px,py)$statistic
+  }
+  perm.p = mean(abs(t.star) >= abs(t.obs))
+  return(perm.p)
+}
+
+
+###cross validation#####
+# Load the data
+data("swiss")
+# Inspect the data
+sample_n(swiss, 3)
+
+# Split the data into training and test set
+set.seed(123)
+
+training.samples <- swiss$Fertility %>%
+  createDataPartition(p = 0.8, list = FALSE)
+train.data  <- swiss[training.samples, ]
+test.data <- swiss[-training.samples, ]
+# Build the model
+model <- lm(Fertility ~., data = train.data)
+# Make predictions and compute the R2, RMSE and MAE
+predictions <- model %>% predict(test.data)
+data.frame( R2 = R2(predictions, test.data$Fertility),
+            RMSE = RMSE(predictions, test.data$Fertility),
+            MAE = MAE(predictions, test.data$Fertility))
+# R program to implement
+
+# K-fold cross-validation
+
+# setting seed to generate a
+# reproducible random sampling
+set.seed(125)
+
+# defining training control
+# as cross-validation and
+# value of K equal to 10
+train_control <- trainControl(method = "cv",
+                              number = 10)
+
+# training the model by assigning sales column
+# as target variable and rest other column
+# as independent variable
+model <- train(Fertility ~., data = swiss,
+               method = "lm",
+               trControl = train_control)
+
+# printing model performance metrics
+# along with other details
+print(model)
+
+model2 <- train(Fertility ~Agriculture +Examination, data = swiss,
+               method = "lm",
+               trControl = train_control)
+
+# printing model performance metrics
+# along with other details
+print(model2)
+names(model2)
+[1] "method"       "modelInfo"    "modelType"    "results"      "pred"         "bestTune"     "call"         "dots"         "metric"      
+[10] "control"      "finalModel"   "preProcess"   "trainingData" "resample"     "resampledCM"  "perfNames"    "maximize"     "yLimits"     
+[19] "times"        "levels"       "terms"        "coefnames"    "xlevels"
+
+model2$results  ## intercept     RMSE  Rsquared      MAE   RMSESD RsquaredSD    MAESD
+model2$results[2]  ##RMSE
+
+
+###weighted LSE
+# R example for Weighted Least Squares  
+# We use the blood pressure data in Table 11.1 of the book  
+
+# Save the data file into a directory and 
+# use the full path name:
+
+bloodpressure.data <- 
+  read.table(file = "z:/My Documents/teaching/stat_704/bloodpressuredata.txt", 
+             header=FALSE, col.names = c('age', 'dbp'))
+
+# attaching the data frame:
+
+attach(bloodpressure.data)
+
+# Regressing the response, dbp, against the predictor, age 
+
+bp.reg <- lm(dbp ~ age) 
+
+# The plots show some definite nonconstant error variance  
+
+plot(age, dbp); abline(bp.reg)
+
+plot(age, resid(bp.reg)); abline(h=0)
+
+# Plot of absolute residuals against age shows that   
+# absolute residuals may increase linearly with age.
+
+abs.res <- abs(resid(bp.reg)) 
+
+plot(age, abs.res)  
+
+
+# Regressing the absolute residuals against the predictor, age  
+
+bp.reg2 <- lm(abs.res ~ age)
+
+# Defining the weights using the fitted values from this second regression:  
+
+weight.vec <- 1/((fitted(bp.reg2))^2);
+
+
+# Using the weights option in lm to get the WLS estimates:  
+
+bp.wls.reg <- lm(dbp ~ age, weights = weight.vec)
+
+summary(bp.wls.reg)
+
+# A residual plot for the WLS regression:
+
+plot(age, resid(bp.wls.reg)); abline(h=0)
+
+
+# R code to analyze the math proficiency data
+# using robust regression
+
+# The data set consists of the response "mathprof"
+# for 40 states/provinces, along with several
+# possible predictor variables
+
+###robust regression
+
+# Save the data file into a directory and 
+# use the full path name:
+
+mathprof.data <- 
+  read.table(file = "http://people.stat.sc.edu/Hitchcock/mathproficiencydata.txt", 
+             header=FALSE, col.names = c('state', 'mathprof', 'parents', 'homelib', 'reading', 'tvwatch', 'absences'))
+
+# attaching the data frame:
+
+attach(mathprof.data)
+
+# The ordinary least-squares fit:
+mathprof.reg <- lm(mathprof ~ parents + homelib + reading + tvwatch + absences)
+
+summary(mathprof.reg)
+
+# Influence measures for this regression:
+influence.measures(mathprof.reg)
+
+# Normal Q-Q plot of residuals shows a couple of possible outliers:
+qqnorm(resid(mathprof.reg))
+
+### Robust regression alternatives:
+
+# must load the MASS and quantreg packages first:
+
+library(MASS); library(quantreg)
+
+# Least Absolute Residuals (LAR) regression:
+
+mathprof.lar <- rq(mathprof ~ parents + homelib + reading + tvwatch + absences)
+
+summary(mathprof.lar)
+
+# Huber's method:
+
+mathprof.huber <- rlm(mathprof ~ parents + homelib + reading + tvwatch + absences)
+
+summary(mathprof.huber)
+
+
+########################################################
+
+# The book suggests a simpler model with only (homelib, reading, tvwatch) as predictors
+
+# least-squares regression with these 3 predictors:
+mathprof.reg <- lm(mathprof ~ homelib + reading + tvwatch)
+summary(mathprof.reg)
+
+# Huber's method robust regression with these 3 predictors:
+mathprof.huber <- rlm(mathprof ~ homelib + reading + tvwatch)
+summary(mathprof.huber)
+
+# Compare these fitted equations with the ones on pg. 447.
+
+
+
+
